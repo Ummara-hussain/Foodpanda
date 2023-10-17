@@ -1,7 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
-
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Swal from 'sweetalert2'
+import PostDetails from "../views/PostDetails";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDEYUKNGXqhdbgwmftNn5QOvw7Zn0EzpW0",
@@ -14,46 +16,69 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+export const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-function register(email, password, fullname, age) {
-    createUserWithEmailAndPassword(auth, email, password)
-        .then(async (userCredential) => {
-            // Signed up 
-            const user = userCredential.user;
-            try {
-                const docRef = await addDoc(collection(db, "users"), {
-                    fullname: fullname,
-                    email: email,
-                    age: age
-                });
-                alert('successfully registered')
-                console.log("Document written with ID: ", docRef.id);
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                alert(e.message)
-            }
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            alert(errorMessage)
+async function details(id) {
+    const docRef = doc(db, "ads", id);
+    try {
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            // console.log("Document data:", docSnap.data());
+            const ads = docSnap.data()
+        } else {
+            // docSnap.data() will be undefined in this case
+            console.log("No such document!");
+        } return docSnap.data()
+    } catch (e) {
+        Swal.fire(e.message)
+    }
+}
+async function register(email, password, fullname, age) {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        const docRef = await addDoc(collection(db, "users"), {
+            fullname: fullname,
+            email: email,
+            age: age
         });
+        Swal.fire('successfully registered')
+    } catch (e) {
+        Swal.fire(e.message)
+    }
 }
 
 function login(email, password) {
-    signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            // Signed in 
-            const user = userCredential.user;
-            alert('Successfully logged in')
-        })
-        .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            alert(errorMessage)
-        });
+    return signInWithEmailAndPassword(auth, email, password)
 }
 
-export { register, login }
+async function postAd({ title, description, price, file }) {
+    try {
+        const url = await uploadImage(file)
+        const data = { title, description, price: +price, imageUrl: url }
+        await addDoc(collection(db, "ads"), data);
+        Swal.fire('Ad posted sucessfully!')
+    } catch (e) {
+        Swal.fire(e.message)
+    }
+}
+
+async function uploadImage(file) {
+    const storageRef = ref(storage, 'ads/' + file.name);
+    await uploadBytes(storageRef, file)
+    const url = await getDownloadURL(storageRef)
+    return url
+}
+
+async function getAds() {
+    const querySnapshot = await getDocs(collection(db, "ads"));
+    const ads = []
+    querySnapshot.forEach((doc) => {
+        const data = doc.data()
+        data.id = doc.id
+        ads.push(data);
+    });
+    return ads
+}
+export { register, login, getAds, postAd, details }

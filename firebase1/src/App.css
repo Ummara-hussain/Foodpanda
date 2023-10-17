@@ -20,7 +20,7 @@
 }
 
 .input{
-  border: 1px solid #e64747;
+  border: 1px solid none;
   width: 250px;
   height: 22px;
   margin: auto;
