@@ -1,0 +1,56 @@
+/* 
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+} */
+
+/* .abc{
+  background-color: black;
+} */
+
+.theme-box {
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+  
+}
+
+.box {
+  width: 15px;
+  height: 15px;
+  border: 1px solid black;
+  border-radius: 15px;
+}
+
+.red {
+  background-color: red;
+}
+
+.black {
+  background-color: black;
+}
+
+.white {
+  background-color: white;
+}
+
+.red-theme {
+  background-color: red;
+  color: white
+}
+
+.black-theme {
+  background-color: black;
+  color: white
+}
+
+.white-theme {
+  background-color: white;
+  color: black
+}
